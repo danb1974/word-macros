@@ -1,0 +1,55 @@
+Sub removeTagFromTableCells()
+
+Tag = InputBox("Enter a tag to remove from all tables")
+
+Dim tbl As Table
+Dim tblRow As Row
+Dim tblCell As Cell
+Dim cellContentRange As Range
+Dim cellContent As String
+
+modifyCount = 0
+For Each tbl In ActiveDocument.Tables
+    For Each tblCell In tbl.Range.Cells
+        Set cellContentRange = tblCell.Range
+        cellContentRange.MoveEnd unit:=wdCharacter, Count:=-1
+        cellContent = cellContentRange.Text
+        cellContent = Replace(cellContent, "<" & Tag & ">", "")
+        cellContent = Replace(cellContent, "</" & Tag & ">", "")
+        If cellContent <> cellContentRange.Text Then
+            tblCell.Range.Text = cellContent
+            modifyCount = modifyCount + 1
+        End If
+    Next
+Next
+MsgBox ("Modified " & modifyCount & " cells")
+
+End Sub
+
+Sub removeFinalEnterFromTableCells()
+
+Dim tbl As Table
+Dim tblRow As Row
+Dim tblCell As Cell
+Dim cellContentRange As Range
+Dim cellContent As String
+
+modifyCount = 0
+For Each tbl In ActiveDocument.Tables
+    For Each tblCell In tbl.Range.Cells
+        Set cellContentRange = tblCell.Range
+        cellContentRange.MoveEnd unit:=wdCharacter, Count:=-1
+        cellContent = cellContentRange.Text
+        If Len(cellContent) <> 0 Then
+            If Right$(cellContent, 1) = vbCr Then
+                cellContent = Left$(cellContent, Len(cellContent) - 1)
+                tblCell.Range.Text = cellContent
+                modifyCount = modifyCount + 1
+            End If
+        End If
+    Next
+Next
+MsgBox ("Modified " & modifyCount & " cells")
+
+End Sub
+

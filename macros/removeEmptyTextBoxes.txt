@@ -1,0 +1,70 @@
+Sub removeEmptyTextBoxesConfirm()
+    Dim shp As Shape
+    Dim content As String
+    Dim choice As Long
+    Dim i As Integer
+    Dim count As Integer: count = 0
+    
+    'MsgBox ("Shape count: " & ActiveDocument.Shapes.count)
+    
+'    For Each shp In ActiveDocument.Shapes
+    For i = ActiveDocument.Shapes.count To 1 Step -1
+        Set shp = ActiveDocument.Shapes(i)
+        If shp.Type = msoTextBox And shp.TextFrame.HasText Then
+            content = shp.TextFrame.TextRange.Text
+            If content = "" Or content = " " Or content = vbCr Then
+                shp.Select
+                ActiveWindow.ScrollIntoView shp
+                Application.ScreenRefresh
+                choice = MsgBox("Found one, remove it?", vbYesNoCancel + vbQuestion)
+                If choice = vbCancel Then
+                    End
+                End If
+                If choice = vbYes Then
+                    count = count + 1
+                    shp.Delete
+                End If
+            End If
+        End If
+    Next i
+'    Next shp
+    
+    MsgBox ("Done, deleted " & count & " boxes")
+End Sub
+
+Sub removeEmptyTextBoxes()
+    Dim shp As Shape
+    Dim content As String
+    Dim i As Integer
+    Dim count As Integer: count = 0
+    
+    'MsgBox ("Shape count: " & ActiveDocument.Shapes.count)
+    
+'    For Each shp In ActiveDocument.Shapes
+    For i = ActiveDocument.Shapes.count To 1 Step -1
+        Set shp = ActiveDocument.Shapes(i)
+        If shp.Type = msoTextBox And shp.TextFrame.HasText Then
+            content = shp.TextFrame.TextRange.Text
+            If content = "" Or content = " " Or content = vbCr Then
+                count = count + 1
+                shp.Delete
+            Else
+                shp.Select
+                ActiveWindow.ScrollIntoView shp
+                Application.ScreenRefresh
+                choice = MsgBox("Found one that does not seem empty, remove it?", vbYesNoCancel + vbQuestion)
+                If choice = vbCancel Then
+                    End
+                End If
+                If choice = vbYes Then
+                    count = count + 1
+                    shp.Delete
+                End If
+            End If
+        End If
+    Next i
+'    Next shp
+    
+    MsgBox ("Done, deleted " & count & " boxes")
+End Sub
+

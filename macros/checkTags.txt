@@ -1,0 +1,108 @@
+Sub checkTags()
+
+    Dim range As range
+    Dim tag As String
+    Dim openTags As Collection
+    Dim position As Long
+    
+    Set openTags = New Collection
+    Set range = ActiveDocument.range
+
+    While range.start + 2 < range.End
+    
+        With range.Find
+            .Text = "<"
+            .Forward = True
+            .Wrap = wdFindStop
+            .Execute
+    
+            If .Found = True Then
+                Application.ScreenRefresh
+                position = .Parent.start
+                tag = extractTagAtPosition(position)
+                tagLength = Len(tag)
+                
+                If Left(tag, 1) = "/" Then
+                    'closing tag
+                    tag = Right(tag, Len(tag) - 1)
+                    Debug.Print "Extracted closing tag " & tag & " at " & position
+                    If collectionContains(openTags, tag) Then
+                        openTags.Remove (tag)
+                    Else
+                        Application.ScreenRefresh
+                        Debug.Print "Tag not opened at " & position & ": " & tag
+                        MsgBox "Tag not opened: " & tag
+                    End If
+                Else
+                    'opening tag
+                    Debug.Print "Extracted opening tag " & tag & " at " & position
+                    If collectionContains(openTags, tag) Then
+                        Application.ScreenRefresh
+                        Debug.Print "Tag already opened at " & position & ": " & tag
+                        MsgBox "Tag already opened: " & tag
+                    Else
+                        openTags.Add tag, Key:=tag
+                    End If
+                End If
+            End If
+            
+            Selection.Collapse
+            range.start = range.start + tagLength + 2
+            range.End = ActiveDocument.range.End
+        End With
+    
+    Wend
+    
+    Selection.Collapse
+    
+    If openTags.count > 0 Then
+        Message = "End of document reached with open tags: "
+        For Each opentag In openTags
+            Message = Message & opentag & " "
+        Next
+        Debug.Print Message
+        MsgBox Message
+    End If
+    
+    Debug.Print "Done"
+    MsgBox "Done"
+
+End Sub
+
+Function extractTagAtPosition(position As Long) As String
+    tag = ""
+    endTag = False
+    
+    Selection.start = position + 1
+    Selection.End = position + 2
+    
+    ActiveWindow.ScrollIntoView Selection.range
+    DoEvents
+        
+    While endTag = False
+        Char = Right(Selection.range.Text, 1)
+        If Char = ">" Then
+            endTag = True
+        Else
+            Selection.End = Selection.End + 1
+        End If
+        
+        'DoEvents
+    Wend
+    
+    extractTagAtPosition = Left(Selection.Text, Len(Selection.Text) - 1)
+End Function
+
+Function collectionContains(myCol As Collection, checkVal As Variant) As Boolean
+    On Error Resume Next
+    
+    collectionContains = False
+    Dim it As Variant
+    For Each it In myCol
+        If it = checkVal Then
+            collectionContains = True
+            Exit Function
+        End If
+    Next
+End Function
+

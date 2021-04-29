@@ -1,0 +1,55 @@
+Sub removeEmptyTextBoxesAndFrames()
+    Dim shp As Shape
+    Dim frm As Frame
+    Dim content As String
+    Dim i As Integer
+    Dim count As Integer: count = 0
+    
+    For i = ActiveDocument.Shapes.count To 1 Step -1
+        Set shp = ActiveDocument.Shapes(i)
+        If shp.Type = msoTextBox And shp.TextFrame.HasText Then
+            content = shp.TextFrame.TextRange.Text
+            If content = "" Or content = " " Or content = vbCr Then
+                count = count + 1
+                shp.Delete
+            Else
+                shp.Select
+                ActiveWindow.ScrollIntoView shp
+                Application.ScreenRefresh
+                choice = MsgBox("Found a textbox that does not seem empty, remove it?", vbYesNoCancel + vbQuestion)
+                If choice = vbCancel Then
+                    End
+                End If
+                If choice = vbYes Then
+                    count = count + 1
+                    shp.Delete
+                End If
+            End If
+        End If
+    Next i
+    
+    For i = ActiveDocument.Frames.count To 1 Step -1
+        Set frm = ActiveDocument.Frames(i)
+        content = frm.range.Text
+        If content = "" Or content = " " Or content = vbCr Then
+            count = count + 1
+            frm.Delete
+        Else
+            frm.Select
+            ActiveWindow.ScrollIntoView frm
+            Application.ScreenRefresh
+            choice = MsgBox("Found a frame that does not seem empty, remove it?", vbYesNoCancel + vbQuestion)
+            If choice = vbCancel Then
+                End
+            End If
+            If choice = vbYes Then
+                count = count + 1
+                frm.Delete
+            End If
+        End If
+    Next i
+    
+    MsgBox ("Done, deleted " & count & " boxes and frames")
+End Sub
+
+

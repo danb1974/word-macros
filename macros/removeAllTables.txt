@@ -1,0 +1,12 @@
+Sub removeAllTables()
+    Dim tbl As Table
+    
+    deleteCount = 0
+    For Each tbl In ActiveDocument.Tables
+        tbl.Delete
+        deleteCount = deleteCount + 1
+    Next tbl
+    
+    MsgBox (deleteCount & " tables were deleted")
+End Sub
+

@@ -1,0 +1,97 @@
+Sub allTablesSameWidth()
+
+Dim table As table
+Dim row As row
+Dim cell As cell
+Dim lastCell As cell
+'Dim tableLeftIndent As Double
+'Dim tableWidth As Double
+'Dim rowWidth As Double
+
+Set table = ActiveDocument.Tables(1)
+Set row = table.Rows(1)
+tableLeftIndent = row.leftIndent
+
+tableWidth = 0
+For Each cell In row.Cells
+    tableWidth = tableWidth + cell.width
+Next cell
+tableWidth = Round(tableWidth, 2)
+MsgBox ("Using first table as model. Table width: " & tableWidth)
+
+On Error Resume Next
+
+cannotResize = 0
+Errors = 0
+
+For i = 2 To ActiveDocument.Tables.count
+    Modified = 0
+    Set table = ActiveDocument.Tables(i)
+    table.Select
+    ActiveWindow.ScrollIntoView Selection.range
+    DoEvents
+    Application.ScreenRefresh
+    
+    table.AllowAutoFit = False
+    'table.AutoFitBehavior = wdAutoFitFixed
+    table.Rows.SetLeftIndent leftIndent:=tableLeftIndent, rulerstyle:=wdAdjustNone
+    
+    mustResize = 0
+    canResize = 1
+    For Each row In table.Rows
+        ' Table has vertical merged cells
+        If Err = 5991 Then
+            Err.Clear
+            GoTo error
+        End If
+        
+        rowWidth = 0
+        For Each cell In row.Cells
+            rowWidth = rowWidth + cell.width
+        Next cell
+        rowWidth = Round(rowWidth, 2)
+        
+        If (Round(rowWidth, 2) <> Round(tableWidth, 2)) Then
+            mustResize = 1
+            Diff = Round(tableWidth - rowWidth, 2)
+            Set lastCell = row.Cells(row.Cells.count)
+            If (Diff < 0 And lastCell.width + Diff < lastCell.LeftPadding + lastCell.RightPadding + 20) Then
+                'MsgBox ("Cannot resize table, press OK to skip to next")
+                cannotResize = cannotResize + 1
+                canResize = 0
+                Exit For
+            End If
+        End If
+    Next row
+    
+    If mustResize > 0 And canResize > 0 Then
+        For Each row In table.Rows
+            rowWidth = 0
+            For Each cell In row.Cells
+                rowWidth = rowWidth + cell.width
+            Next cell
+            rowWidth = Round(rowWidth, 2)
+            
+            If (Round(rowWidth, 2) <> Round(tableWidth, 2)) Then
+                Diff = Round(tableWidth - rowWidth, 2)
+                Set lastCell = row.Cells(row.Cells.count)
+                'MsgBox ("Last cell width: " & lastCell.width & ", diff: " & Diff)
+                'lastCell.width = lastCell.width + Diff
+                lastCell.SetWidth ColumnWidth:=lastCell.width + Diff, rulerstyle:=wdAdjustNone
+                If Err > 0 Then
+                    Err.Clear
+                    'MsgBox ("Error " & Err & ", press Ok to skip to next table")
+                    Errors = Errors + 1
+                    Exit For
+                End If
+            End If
+        Next row
+    End If
+    
+error:
+Next i
+
+MsgBox ("Done, unable to resize " & cannotResize & " tables, encountered " & Errors & " errors")
+
+End Sub
+

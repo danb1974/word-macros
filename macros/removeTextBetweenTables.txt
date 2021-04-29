@@ -1,0 +1,55 @@
+Sub removeTextBetweenTables()
+
+    Dim tbl As table
+    Dim tbl1 As table
+    Dim tbl2 As table
+    Dim rng As range
+
+    tblCount = ActiveDocument.Tables.count
+    If tblCount < 1 Then
+        MsgBox ("No tables")
+        End
+    End If
+    
+    ' between tables
+    If tblCount > 1 Then
+        For i = 1 To tblCount - 1
+            Set tbl1 = ActiveDocument.Tables(i)
+            Set tbl2 = ActiveDocument.Tables(i + 1)
+    
+            Set rng = ActiveDocument.range
+            rng.start = tbl1.range.End
+            rng.End = tbl2.range.start
+        
+            If rng.End - rng.start > 1 Then
+                rng.Select
+                Selection.Delete
+            End If
+        Next i
+    End If
+
+    ' before first table
+    Set tbl = ActiveDocument.Tables(1)
+    Set rng = ActiveDocument.range
+    rng.End = tbl.range.start
+    If rng.End - rng.start > 1 Then
+        rng.Select
+        Selection.Delete
+    End If
+   
+    ' after last table
+    Set tbl = ActiveDocument.Tables(tblCount)
+    Set rng = ActiveDocument.range
+    rng.start = tbl.range.End
+    If rng.End - rng.start > 1 Then
+        rng.Select
+        Selection.Delete
+    End If
+    
+    Application.ScreenRefresh
+    
+    MsgBox ("Done, " & tblCount & " tables")
+
+End Sub
+
+

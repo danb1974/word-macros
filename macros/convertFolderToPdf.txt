@@ -1,0 +1,21 @@
+' Save all docx files in specified folder as pdf
+Sub convertFolderToPdf()
+
+folder = Trim(InputBox("Directorul in care sunt fisierele"))
+
+docFile = Dir(folder & "\*.docx", vbNormal)
+While docFile <> ""
+    Set docObj = Documents.Open(FileName:=folder & docFile)
+    
+    docObj.ExportAsFixedFormat _
+        OutputFileName:=Replace(docObj.FullName, ".docx", ".pdf"), _
+        ExportFormat:=wdExportFormatPDF, OpenAfterExport:=False, OptimizeFor:=wdExportOptimizeForPrint, _
+        Range:=wdExportAllDocument, _
+        Item:=wdExportDocumentContent
+        
+    docObj.Close
+    
+    docFile = Dir()
+Wend
+
+End Sub

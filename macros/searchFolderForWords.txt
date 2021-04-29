@@ -1,0 +1,44 @@
+' Search all docx files in specified folder for a list of words and report where
+Sub searchFolderForWords()
+
+folder = Trim(InputBox("Directorul in care sunt fisierele"))
+
+wordStr = Trim(InputBox("Cuvintele cautate, separate de spatii, case sensitive"))
+Words = Split(wordStr, " ")
+
+logFile = folder & "\report.txt"
+Open logFile For Output As #1
+
+docFile = Dir(folder & "\*.docx", vbNormal)
+While docFile <> ""
+    Set docObj = Documents.Open(FileName:=folder & docFile)
+  
+    Dim word As Variant
+    Dim foundWordsStr As String
+    
+    foundWordsStr = ""
+    For Each word In Words
+        Set Range = docObj.Content
+        Range.Find.Execute _
+            FindText:=word, _
+            Forward:=True, _
+            MatchCase:=True
+        If Range.Find.Found = True Then
+            foundWordsStr = foundWordsStr & " '" & word & "'"
+        End If
+    Next word
+    
+    If Not foundWordsStr = "" Then
+        Print #1, "Fisierul " & docFile & " contine cuvintele " & Trim(foundWordsStr)
+    End If
+    
+    docObj.Close
+
+    docFile = Dir()
+Wend
+
+Close #1
+
+MsgBox "Raportul a fost generat in " & logFile
+
+End Sub

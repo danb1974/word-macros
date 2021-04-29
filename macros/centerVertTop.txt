@@ -1,0 +1,6 @@
+Sub centerVertTop()
+    Selection.SelectCell
+    Selection.ParagraphFormat.Alignment = wdAlignParagraphCenter
+    Selection.Cells.VerticalAlignment = wdCellAlignVerticalTop
+End Sub
+

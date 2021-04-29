@@ -1,0 +1,107 @@
+
+Sub normalizeDate()
+
+Dim regEx As RegExp
+Dim match As match
+Dim MatchRange As range
+Dim offset As Integer: offset = 0
+Dim oldValue As String
+Dim newValue As String
+Dim response As Long
+
+Set regEx = New RegExp
+With regEx
+    .Pattern = "0?(\d{1,2})[ .-]+0?(\d{1,2})[ .-]+(\d{4})"
+    .IgnoreCase = False
+    .Global = True
+End With
+
+Set matches = regEx.Execute(ActiveDocument.range.Text)
+For Each match In matches
+    oldValue = match.Value
+    newValue = match.submatches.Item(0) & ". " & match.submatches.Item(1) & ". " & match.submatches.Item(2)
+    If oldValue <> newValue Then
+        Set MatchRange = ActiveDocument.range(match.FirstIndex + offset, match.FirstIndex + match.Length + offset)
+        MatchRange.Select
+        Application.ScreenRefresh
+        
+        response = MsgBox("Replace " & oldValue & " with " & newValue & " ?", vbYesNoCancel + vbQuestion)
+        If response = vbCancel Then
+            End
+        End If
+        If response = vbYes Then
+            MatchRange = regEx.Replace(MatchRange, newValue)
+            MatchRange.Select
+            Application.ScreenRefresh
+            
+            If MsgBox("Check selection then press Ok to continue or Cancel to stop", vbOKCancel) = vbCancel Then
+                End
+            End If
+            
+            offset = offset + MatchRange.End - MatchRange.Start - match.Length
+            Selection.Move
+        End If
+    End If
+Next
+
+MsgBox ("Done")
+
+End Sub
+
+Sub normalizeDateFootnotes()
+
+Dim footnote As footnote
+Dim regEx As RegExp
+Dim match As match
+Dim MatchRange As range
+Dim offset As Integer
+Dim oldValue As String
+Dim newValue As String
+Dim response As Long
+
+Set regEx = New RegExp
+With regEx
+    .Pattern = "0?(\d{1,2})[ .-]+0?(\d{1,2})[ .-]+(\d{4})"
+    .IgnoreCase = False
+    .Global = True
+End With
+
+For Each footnote In ActiveDocument.Footnotes
+    offset = 0
+    Set matches = regEx.Execute(footnote.range.Text)
+    For Each match In matches
+        oldValue = match.Value
+        newValue = match.submatches.Item(0) & ". " & match.submatches.Item(1) & ". " & match.submatches.Item(2)
+        If oldValue <> newValue Then
+            footnote.range.Select
+            Selection.Start = Selection.Start + match.FirstIndex + offset
+            Selection.End = Selection.Start + Len(oldValue)
+            Application.ScreenRefresh
+            
+            response = MsgBox("Replace " & oldValue & " with " & newValue & " ?", vbYesNoCancel + vbQuestion)
+            If response = vbCancel Then
+                End
+            End If
+            If response = vbYes Then
+                Selection.range.Text = newValue
+                
+                footnote.range.Select
+                Selection.Start = Selection.Start + match.FirstIndex + offset
+                Selection.End = Selection.Start + Len(newValue)
+                Application.ScreenRefresh
+                
+                If MsgBox("Check selection then press Ok to continue or Cancel to stop", vbOKCancel) = vbCancel Then
+                    End
+                End If
+                
+                offset = offset + Len(newValue) - Len(oldValue)
+                Selection.Move
+            End If
+        End If
+    Next
+Next
+
+MsgBox ("Done")
+
+End Sub
+
