@@ -1,0 +1,27 @@
+Sub removeFinalEnterFromTableCells()
+
+Dim tbl As table
+Dim tblRow As row
+Dim tblCell As cell
+Dim cellContentRange As Range
+
+modifyCount = 0
+For Each tbl In ActiveDocument.Tables
+    For Each tblRow In tbl.Rows
+        For Each tblCell In tblRow.Cells
+            Set cellContentRange = tblCell.Range
+            cellContentRange.MoveEnd Unit:=wdCharacter, count:=-1
+            cellContent = cellContentRange.Text
+            If Len(cellContent) <> 0 Then
+                If Right$(cellContent, 1) = vbCr Then
+                    cellContent = Left$(cellContent, Len(cellContent) - 1)
+                    tblCell.Range.Text = cellContent
+                    modifyCount = modifyCount + 1
+                End If
+            End If
+        Next
+    Next
+Next
+MsgBox ("Modified " & modifyCount & " cells")
+
+End Sub
