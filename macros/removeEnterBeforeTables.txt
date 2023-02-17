@@ -1,0 +1,17 @@
+Sub removeEnterBeforeTables()
+    Dim table As table
+    
+    removed = 0
+    For Each table In ActiveDocument.Tables
+        table.Select
+        Selection.Start = Selection.Start - 1
+        Selection.End = Selection.Start + 1
+        If Selection.range.Text = vbCr Then
+            Selection.Delete
+            'Application.ScreenRefresh
+            removed = removed + 1
+        End If
+    Next table
+    
+    MsgBox "Done, removed " & removed & " line breaks"
+End Sub
